@@ -164,11 +164,11 @@ class TrialPromptSheet extends StatelessWidget {
                                 color: Colors.grey[100],
                               ),
                               child: (user.avatar.isNotEmpty && user.avatar.startsWith('http'))
-                                  ? CachedNetworkImage(
-                                      imageUrl: user.avatar,
+                                  ? Image.network(
+                                      user.avatar,
                                       fit: BoxFit.cover,
-                                      placeholder: (context, url) => Container(color: Colors.grey[100]),
-                                      errorWidget: (context, url, error) => Center(
+                                      loadingBuilder: (context, child, p) => p == null ? child : Container(color: Colors.grey[100]),
+                                      errorBuilder: (context, error, stackTrace) => Center(
                                         child: Text(
                                           user.username.isNotEmpty ? user.username[user.username.startsWith('@') ? 1 : 0].toUpperCase() : '?',
                                           style: const TextStyle(fontWeight: FontWeight.bold),

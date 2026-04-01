@@ -100,11 +100,11 @@ class _TrendingTabState extends State<TrendingTab> {
                             color: Colors.grey[100],
                           ),
                           child: avatarUrl != null && avatarUrl.startsWith('http')
-                              ? CachedNetworkImage(
-                                  imageUrl: avatarUrl,
+                              ? Image.network(
+                                  avatarUrl,
                                   fit: BoxFit.cover,
-                                  placeholder: (context, url) => Container(color: Colors.grey[100]),
-                                  errorWidget: (context, url, error) => Center(child: Text(username.isNotEmpty ? username[0].toUpperCase() : '?', style: TextStyle(color: Colors.grey[500], fontWeight: FontWeight.bold))),
+                                  loadingBuilder: (context, child, p) => p == null ? child : Container(color: Colors.grey[100]),
+                                  errorBuilder: (context, error, stackTrace) => Center(child: Text(username.isNotEmpty ? username[0].toUpperCase() : '?', style: TextStyle(color: Colors.grey[500], fontWeight: FontWeight.bold))),
                                 )
                               : Center(child: Text(username.isNotEmpty ? username[0].toUpperCase() : '?', style: TextStyle(color: Colors.grey[500], fontWeight: FontWeight.bold))),
                         ),

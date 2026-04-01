@@ -138,10 +138,11 @@ class _SearchTabState extends State<SearchTab> {
                                 post.mediaUrl.startsWith('http')
                                     ? ((post.isVideo && post.thumbnailUrl.isEmpty)
                                         ? Container(color: Colors.black87)
-                                        : CachedNetworkImage(
-                                            imageUrl: post.isVideo ? post.thumbnailUrl : post.mediaUrl,
+                                        : Image.network(
+                                            post.isVideo ? post.thumbnailUrl : post.mediaUrl,
                                             fit: BoxFit.cover,
-                                            placeholder: (context, url) => Container(color: Colors.grey[200]),
+                                            loadingBuilder: (context, child, p) => p == null ? child : Container(color: Colors.grey[200]),
+                                            errorBuilder: (context, error, stackTrace) => Container(color: Colors.grey[200], child: const Center(child: Icon(Icons.broken_image, color: Colors.grey))),
                                           ))
                                     : Image.network(post.mediaUrl, fit: BoxFit.cover),
                                 if (post.isVideo)
@@ -216,7 +217,7 @@ class _SearchTabState extends State<SearchTab> {
                   shape: BoxShape.circle,
                   color: Colors.deepPurple.withOpacity(0.1),
                   image: avatarUrl.isNotEmpty && avatarUrl.startsWith('http')
-                      ? DecorationImage(image: CachedNetworkImageProvider(avatarUrl), fit: BoxFit.cover)
+                      ? NetworkImage(avatarUrl)
                       : null,
                 ),
                 child: avatarUrl.isEmpty || !avatarUrl.startsWith('http')

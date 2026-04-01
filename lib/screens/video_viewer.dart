@@ -215,8 +215,13 @@ class _ImagePageState extends State<ImagePage> {
             ? FittedBox(
                 fit: BoxFit.contain,
                 clipBehavior: Clip.hardEdge,
-                child: CachedNetworkImage(
-                  imageUrl: widget.post.mediaUrl,
+                child: Image.network(
+                  widget.post.mediaUrl,
+                  loadingBuilder: (context, child, loadingProgress) {
+                    if (loadingProgress == null) return child;
+                    return const Center(child: CircularProgressIndicator(color: Colors.white));
+                  },
+                  errorBuilder: (context, error, stackTrace) => const Center(child: Icon(Icons.broken_image, color: Colors.white, size: 50)),
                 ),
               )
             : Container(color: Colors.black), // Fallback

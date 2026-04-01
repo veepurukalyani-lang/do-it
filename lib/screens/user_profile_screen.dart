@@ -643,7 +643,8 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                       return ListTile(
                         leading: CircleAvatar(
                           backgroundColor: Colors.grey[100],
-                          backgroundImage: profileImg.isNotEmpty ? CachedNetworkImageProvider(profileImg) : null,
+                          backgroundImage: profileImg.isNotEmpty && profileImg.startsWith('http') ? NetworkImage(profileImg) : null,
+                          onBackgroundImageError: (e, s) => {},
                           child: (profileImg.isEmpty && user.isNotEmpty) 
                               ? Text(user[1].toUpperCase(), style: const TextStyle(color: Colors.black, fontSize: 12)) 
                               : (user.isEmpty ? const Icon(Icons.person, color: Colors.black) : null),
