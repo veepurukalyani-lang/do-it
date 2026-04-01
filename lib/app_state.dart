@@ -216,13 +216,25 @@ class AppState extends ChangeNotifier {
   Future<void> loginWithGoogle() async {
     try {
       GoogleAuthProvider googleProvider = GoogleAuthProvider();
+      
+      // Set parameters to ensure the popup is always fresh
+      googleProvider.setCustomParameters({
+        'prompt': 'select_account'
+      });
+
       if (kIsWeb) {
+        // Adding a tiny delay helps some browsers handle the popup event better
+        await Future.delayed(const Duration(milliseconds: 100));
         await FirebaseAuth.instance.signInWithPopup(googleProvider);
       } else {
         await FirebaseAuth.instance.signInWithProvider(googleProvider);
       }
     } catch (e) {
       debugPrint('Login failed: $e');
+      if (e.toString().contains('cancelled')) {
+        // User closed the popup, ignore the error
+        return;
+      }
       rethrow;
     }
   }
