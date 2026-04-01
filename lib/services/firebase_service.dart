@@ -18,10 +18,14 @@ class FirebaseService {
   Stream<List<Post>> getHomeFeedStream({List<String>? followingUsers}) {
     return _firestore
         .collection('posts')
-        .limit(40) // Reduced from 400 to 40 for 1s load time
+        .orderBy('createdAt', descending: true)
+        .limit(40)
         .snapshots()
         .map((snapshot) {
-      List<Post> allPosts = snapshot.docs.map((doc) => Post.fromMap(doc.data())).toList();
+      List<Post> allPosts = snapshot.docs
+          .map((doc) => Post.fromMap(doc.data()))
+          .where((post) => post.username != 'Anonymous' && post.mediaUrl.isNotEmpty)
+          .toList();
 
       // 1. Group posts by creator
       final Map<String, List<Post>> groupedByCreator = {};
@@ -108,9 +112,9 @@ class FirebaseService {
     return _firestore
         .collection('posts')
         .orderBy('trialsCount', descending: true)
-        .limit(100) // Reduced from 400 to 100 for faster aggregation
+        .limit(100)
         .snapshots()
-        .map((snapshot) {
+        .asyncMap((snapshot) async {
       final Map<String, int> userTrials = {};
       final Map<String, int> userLikes = {};
       final Map<String, int> userViews = {};
@@ -120,9 +124,12 @@ class FirebaseService {
       for (var doc in snapshot.docs) {
         final data = doc.data();
         
-        // Normalization for aggregation: lowercase, no @
         final rawUser = data['username']?.toString() ?? 'Anonymous';
-        final username = rawUser.trim(); // Keep original casing but trim whitespace
+        final username = rawUser.trim();
+        
+        // Skip Anonymous users entirely
+        if (username == 'Anonymous' || username.isEmpty) continue;
+        
         final lookupKey = username.toLowerCase().replaceAll('@', '');
         
         final isVideo = data['isVideo'] == true || (data['mediaUrl']?.toString().toLowerCase().endsWith('.mp4') ?? false);
@@ -132,7 +139,6 @@ class FirebaseService {
         // ONLY aggregate trials for non-video posts with prompts
         if (!isVideo && prompt.trim().isNotEmpty) {
           userTrials[lookupKey] = (userTrials[lookupKey] ?? 0) + (trials as num).toInt();
-          // Keep track of the display name
           userAvatars[lookupKey + '_dn'] = username;
         }
         
@@ -143,6 +149,29 @@ class FirebaseService {
         final profileImage = data['profileImage']?.toString() ?? '';
         if (profileImage.isNotEmpty && !profileImage.contains('.svg')) {
           userAvatars[lookupKey] = profileImage;
+        }
+      }
+
+      // Fetch profile images from users collection for any missing avatars
+      final missingAvatarKeys = userTrials.keys.where((key) => 
+        userAvatars[key] == null || userAvatars[key]!.isEmpty
+      ).toList();
+      
+      if (missingAvatarKeys.isNotEmpty) {
+        try {
+          final usersSnapshot = await _firestore.collection('users').get();
+          for (var userDoc in usersSnapshot.docs) {
+            final userData = userDoc.data();
+            final uName = (userData['username']?.toString() ?? '').toLowerCase().replaceAll('@', '').trim();
+            if (missingAvatarKeys.contains(uName)) {
+              final img = userData['profileImage']?.toString() ?? '';
+              if (img.isNotEmpty && img.startsWith('http') && !img.contains('.svg')) {
+                userAvatars[uName] = img;
+              }
+            }
+          }
+        } catch (e) {
+          debugPrint('Error fetching user avatars: $e');
         }
       }
 

@@ -282,11 +282,16 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
             child: post.mediaUrl.startsWith('http')
                 ? ((post.isVideo && post.thumbnailUrl.isEmpty)
                     ? Container(color: Colors.black87)
-                    : CachedNetworkImage(
-                        imageUrl: post.isVideo ? post.thumbnailUrl : post.mediaUrl,
+                    : Image.network(
+                        post.isVideo ? post.thumbnailUrl : post.mediaUrl,
                         fit: BoxFit.cover,
-                        placeholder: (context, url) => const Center(child: CircularProgressIndicator(strokeWidth: 2)),
-                        errorWidget: (context, url, error) => const Icon(Icons.broken_image, color: Colors.grey),
+                        width: double.infinity,
+                        height: double.infinity,
+                        loadingBuilder: (context, child, loadingProgress) {
+                          if (loadingProgress == null) return child;
+                          return Center(child: CircularProgressIndicator(strokeWidth: 2, color: Colors.grey[400]));
+                        },
+                        errorBuilder: (context, url, error) => const Center(child: Icon(Icons.broken_image, color: Colors.grey)),
                       ))
                 : ((post.isVideo && post.thumbnailUrl.isEmpty)
                     ? Container(color: Colors.black87)
@@ -679,6 +684,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
       builder: (context, snapshot) {
         final data = snapshot.data;
         final String? profileImg = data?['profileImage'];
+        final bool hasValidImage = profileImg != null && profileImg.isNotEmpty && profileImg.startsWith('http') && !profileImg.contains('.svg');
 
         return Container(
           width: 100,
@@ -686,24 +692,44 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
           clipBehavior: Clip.antiAlias,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            gradient: (profileImg == null || profileImg.isEmpty) ? LinearGradient(
+            gradient: !hasValidImage ? LinearGradient(
               colors: [Colors.purpleAccent.withOpacity(0.8), Colors.pinkAccent.withOpacity(0.8)],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ) : null,
+            color: hasValidImage ? Colors.grey[200] : null,
             boxShadow: [
               BoxShadow(color: Colors.purple.withOpacity(0.1), blurRadius: 15, offset: const Offset(0, 8)),
             ],
           ),
-          child: (profileImg != null && profileImg.isNotEmpty)
-              ? CachedNetworkImage(
-                  imageUrl: profileImg,
+          child: hasValidImage
+              ? Image.network(
+                  profileImg!,
                   fit: BoxFit.cover,
-                  placeholder: (context, url) => const Center(child: CircularProgressIndicator(strokeWidth: 2)),
-                  errorWidget: (context, url, error) => Center(
-                    child: Text(
-                      username.isNotEmpty ? username[username.startsWith('@') ? 1 : 0].toUpperCase() : '?',
-                      style: const TextStyle(fontSize: 40, fontWeight: FontWeight.bold, color: Colors.white),
+                  width: 100,
+                  height: 100,
+                  loadingBuilder: (context, child, loadingProgress) {
+                    if (loadingProgress == null) return child;
+                    return Center(
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        value: loadingProgress.expectedTotalBytes != null
+                            ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
+                            : null,
+                      ),
+                    );
+                  },
+                  errorBuilder: (context, error, stackTrace) => Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [Colors.purpleAccent.withOpacity(0.8), Colors.pinkAccent.withOpacity(0.8)],
+                      ),
+                    ),
+                    child: Center(
+                      child: Text(
+                        username.isNotEmpty ? username[username.startsWith('@') ? 1 : 0].toUpperCase() : '?',
+                        style: const TextStyle(fontSize: 40, fontWeight: FontWeight.bold, color: Colors.white),
+                      ),
                     ),
                   ),
                 )
