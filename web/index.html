@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base href="/">
+
+  <meta charset="UTF-8">
+  <meta content="IE=Edge" http-equiv="X-UA-Compatible">
+  <meta name="description" content="AI Art - Social platform for AI Art creators.">
+
+  <!-- iOS meta tags & icons -->
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-title" content="Ai Art">
+  <link rel="apple-touch-icon" href="icons/Icon-192.png">
+
+  <!-- Force load Material Icons & Symbols from Google CDNs to fix broken rectangles on Cloudflare Web Deploy -->
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
+
+  <!-- Favicon uses perfectly scaled and centered SVG emoji -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%2250%%22 x=%2250%%22 dominant-baseline=%22central%22 text-anchor=%22middle%22 font-size=%2280%22>🎨</text></svg>">
+
+  <title>Ai Art</title>
+  <link rel="manifest" href="manifest.json">
+</head>
+<body>
+  <style>
+    body { 
+      background-color: #ffffff; 
+      margin: 0; 
+      padding: 0; 
+      overflow: hidden; 
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    .splash-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    .loader {
+      width: 48px;
+      height: 48px;
+      border: 4px solid #f3f3f3;
+      border-bottom-color: #673ab7;
+      border-radius: 50%;
+      display: inline-block;
+      box-sizing: border-box;
+      animation: rotation 1s linear infinite;
+      margin-top: 24px;
+    }
+    .brand-text {
+      font-family: system-ui, -apple-system, sans-serif;
+      font-size: 24px;
+      font-weight: 900;
+      color: #333;
+      letter-spacing: -0.5px;
+    }
+    @keyframes rotation {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+  
+  <div class="splash-container">
+    <div class="brand-text">Ai 🎨 Art</div>
+    <div class="loader"></div>
+  </div>
+
+  <!-- Removed flutterConfiguration override to prevent renderer deadlocks -->
+  <script src="flutter_bootstrap.js" async></script>
+</body>
+</html>
